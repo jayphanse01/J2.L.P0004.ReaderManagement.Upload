@@ -43,6 +43,7 @@ public class MainView extends javax.swing.JFrame {
         rdMale.setSelected(true);
         calBirthday.getDateEditor().setEnabled(false);
         txtReaderID.setEditable(false);
+        cbxSortByName.setSelectedIndex(-1);
     }
 
     /**
@@ -341,7 +342,9 @@ public class MainView extends javax.swing.JFrame {
         // TODO add your handling code here:
         if (readerData.isEmpty()) {
             JOptionPane.showMessageDialog(null, "Reader data is empty");
+            showReaderTbl(readerData);
         } else {
+            cbxSortByName.setSelectedIndex(-1);
             txtReaderID.setText("");
             txtFullName.setText("");
             txtEmail.setText("");
@@ -362,12 +365,31 @@ public class MainView extends javax.swing.JFrame {
 
     private void cbxSortByNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxSortByNameActionPerformed
         // TODO add your handling code here:
+        int index = cbxSortByName.getSelectedIndex();
+        if (index < 0) {
+            txtReaderID.setText("");
+            txtFullName.setText("");
+            txtEmail.setText("");
+            txtPhone.setText("");
+            txaAddress.setText("");
+            Date date = Calendar.getInstance().getTime();
+            calBirthday.setDate(date);
+            rdMale.setSelected(true);
+            txtSearchByName.setText("");
+            checkDelete = false;
+            checkFindByName = false;
+            chkAddnewOrUpdate = false;
+            checkAddnewBtn = false;
+            checkSorted = false;
+            showReaderTbl(readerData);
+            return;
+        }
         String sortBySelected = cbxSortByName.getSelectedItem().toString();
         if (readerData.isEmpty()) {
             JOptionPane.showMessageDialog(null, "Nothing to sort");
             return;
         } else {
-            sortedReaderData = readerData;
+            sortedReaderData = (ArrayList<ReaderDTO>) readerData.clone();
             if (sortBySelected.equalsIgnoreCase("Ascending")) {
                 sortByAscending(sortedReaderData);
                 txtReaderID.setText("");
@@ -460,7 +482,6 @@ public class MainView extends javax.swing.JFrame {
             }
             if (!readerValid.checkDupID(readerID, readerData)) {
                 JOptionPane.showMessageDialog(null, "Reader ID has been existed");
-                return;
             } else {
                 boolean chkSave = dao.createReader(dto);
                 if (chkSave) {
@@ -479,6 +500,7 @@ public class MainView extends javax.swing.JFrame {
                     chkAddnewOrUpdate = false;
                     checkAddnewBtn = false;
                     checkSorted = false;
+                    cbxSortByName.setSelectedIndex(-1);
                     JOptionPane.showMessageDialog(null, "Add successful");
                 } else {
                     JOptionPane.showMessageDialog(null, "Add fail");
@@ -486,7 +508,9 @@ public class MainView extends javax.swing.JFrame {
 
             }
         } else {
+
             boolean chkUpdate = dao.updateReader(dto);
+
             if (chkUpdate) {
                 readerData = dao.getReaderList();
                 showReaderTbl(readerData);
@@ -505,6 +529,7 @@ public class MainView extends javax.swing.JFrame {
                 checkFindByName = false;
                 checkAddnewBtn = false;
                 checkSorted = false;
+                cbxSortByName.setSelectedIndex(-1);
                 JOptionPane.showMessageDialog(null, "Update successful");
             } else {
 
@@ -693,9 +718,10 @@ public class MainView extends javax.swing.JFrame {
                 chkAddnewOrUpdate = false;
                 checkDelete = false;
                 checkFindByName = false;
+                cbxSortByName.setSelectedIndex(-1);
                 readerData = dao.getReaderList();
                 showReaderTbl(readerData);
-
+                tblReader.updateUI();
             } else {
                 JOptionPane.showMessageDialog(null, "Delete fail");
             }
@@ -800,6 +826,9 @@ public class MainView extends javax.swing.JFrame {
             }
             tblReader.setModel(model);
             tblReader.updateUI();
+        } else {
+            tblReader.setModel(model);
+            tblReader.updateUI();
         }
 
     }
@@ -812,7 +841,7 @@ public class MainView extends javax.swing.JFrame {
         int birthYear = cal.get(Calendar.YEAR);
         //end get birth year
         int curYear = Calendar.getInstance().get(Calendar.YEAR);
-        age = curYear - birthYear;
+        age = curYear - birthYear + 1;
         return age;
     }
 
